@@ -5,7 +5,7 @@ import datetime
 import re
 from dateutil.parser import parse  # Add to requirements.txt: python-dateutil
 
-# Add background image and text color fix via CSS
+# Add background image and enhanced text/button fixes via CSS
 st.markdown("""
     <style>
     .stApp {
@@ -14,21 +14,25 @@ st.markdown("""
         background-position: center;
         background-repeat: no-repeat;
         background-attachment: fixed;
-        font-size: 16px;  /* Increase global font size for better readability */
+    }
+    body, .stApp * {
+        font-size: 18px !important;  /* Larger global font size for better readability */
+        color: #333333 !important;  /* Dark gray text everywhere */
     }
     .stApp > header {  /* Semi-transparent header */
         background-color: rgba(255, 255, 255, 0.7);
     }
-    /* Make text dark for readability */
-    .stMarkdown, .stText, .stWarning, .stSubheader, .stTitle, p, div {
-        color: #333333 !important;  /* Dark gray */
-    }
+    /* Titles and subheaders bigger */
+    .stTitle { font-size: 32px !important; }
+    .stSubheader { font-size: 24px !important; }
     a { color: #0066cc !important; }  /* Links blue for visibility */
-    /* Specific button styling: Bold black text for readability */
+    /* Specific button styling: Bold black text, white background for high contrast */
     .stButton > button {
         color: #000000 !important;  /* Black text */
+        background-color: #FFFFFF !important;  /* White background for visibility */
         font-weight: bold !important;  /* Bolder for emphasis */
-        font-size: 18px !important;  /* Slightly larger button text */
+        font-size: 20px !important;  /* Even larger button text */
+        border: 2px solid #000000 !important;  /* Black border to stand out */
     }
     </style>
 """, unsafe_allow_html=True)
