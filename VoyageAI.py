@@ -49,16 +49,16 @@ st.markdown("""
 
 # Modular fallback dictionaries (expand as needed)
 FALLBACK_TRANSPORTS = {
-    "chiang mai": [
+    "chiangmai": [
         {"mode": "Bus (direct or via Bangkok, ~10-12h)", "price": "~$20-40", "link": "https://www.bookaway.com/routes/thailand/bangkok-to-chiang-mai"},
         {"mode": "Train + Bus (~12h total)", "price": "~$15-30", "link": "https://www.rome2rio.com/s/Bangkok/Chiang-Mai"}
     ],
-    "kuala lumpur": [
+    "kualalumpur": [
         {"mode": "Flight (from BKK to KUL, ~2h)", "price": "~$50-100", "link": "https://www.skyscanner.net/transport/flights/bkkt/kul/"},
         {"mode": "Bus + Flight (Pattaya to BKK ~2h, then flight ~2h)", "price": "~$10 + $50-100 (total ~$60-110)", "link": "https://www.rome2rio.com/s/Pattaya/Kuala-Lumpur"},
         {"mode": "Train + Bus (via border, ~24h total)", "price": "~$30-60", "link": "https://www.seat61.com/Malaysia.htm"}
     ],
-    "bangkok": [  # Example addition
+    "bangkok": [
         {"mode": "Bus (direct, ~2h from Pattaya)", "price": "~$5-10", "link": "https://www.rome2rio.com/s/Pattaya/Bangkok"},
         {"mode": "Minivan (~2h)", "price": "~$4-8", "link": "https://www.bookaway.com/routes/thailand/pattaya-to-bangkok"}
     ],
@@ -69,17 +69,22 @@ FALLBACK_TRANSPORTS = {
     "singapore": [
         {"mode": "Flight (from BKK, ~2.5h)", "price": "~$60-120", "link": "https://www.skyscanner.net/transport/flights/bkkt/sin/"},
         {"mode": "Bus + Flight (~4h total from Pattaya)", "price": "~$10 + $60-120", "link": "https://www.rome2rio.com/s/Pattaya/Singapore"}
+    ],
+    "roma": [  # Added for Rome, Italy (assuming that's the intent)
+        {"mode": "Flight (BKK to FCO, ~12h with stopover)", "price": "~$400-800", "link": "https://www.skyscanner.net/transport/flights/bkkt/rome/"},
+        {"mode": "Bus + Flight (Pattaya to BKK ~2h, then flight)", "price": "~$10 + $400-800 (total ~$410-810)", "link": "https://www.rome2rio.com/s/Pattaya/Rome-Italy"},
+        {"mode": "Multi-stop (train/bus + flight, 20h+)", "price": "~$350-700", "link": "https://www.kayak.com/flights/BKK-ROM"}
     ]
     # Add more cities here, e.g., "tokyo": [...]
 }
 
 FALLBACK_HOTELS = {
-    "chiang mai": [
+    "chiangmai": [
         {"name": "Akyra Manor Chiang Mai", "price": "~฿3,000/night", "rating": "8.9", "link": "https://www.booking.com/hotel/th/akyra-manor-chiang-mai.en-gb.html"},
         {"name": "Pingviman Hotel", "price": "~฿2,500/night", "rating": "8.7", "link": "https://www.booking.com/hotel/th/pingviman.en-gb.html"},
         {"name": "99 The Gallery Hotel", "price": "~฿1,800/night", "rating": "8.5", "link": "https://www.booking.com/hotel/th/99-the-gallery.en-gb.html"}
     ],
-    "kuala lumpur": [
+    "kualalumpur": [
         {"name": "Mandarin Oriental Kuala Lumpur", "price": "~$150/night", "rating": "9.0", "link": "https://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-gb.html"},
         {"name": "Hilton Kuala Lumpur", "price": "~$100/night", "rating": "8.8", "link": "https://www.booking.com/hotel/my/hilton-kuala-lumpur.en-gb.html"},
         {"name": "Sunway Putra Hotel", "price": "~$60/night", "rating": "8.5", "link": "https://www.booking.com/hotel/my/sunway-putra.en-gb.html"}
@@ -95,19 +100,24 @@ FALLBACK_HOTELS = {
     "singapore": [
         {"name": "Marina Bay Sands", "price": "~$400/night", "rating": "9.0", "link": "https://www.booking.com/hotel/sg/marina-bay-sands.en-gb.html"},
         {"name": "Hotel Boss", "price": "~$100/night", "rating": "8.0", "link": "https://www.booking.com/hotel/sg/boss.en-gb.html"}
+    ],
+    "roma": [  # Added for Rome
+        {"name": "Hotel Artemide", "price": "~€150/night", "rating": "9.3", "link": "https://www.booking.com/hotel/it/artemide-roma.en-gb.html"},
+        {"name": "NH Collection Roma Palazzo Cinquecento", "price": "~€200/night", "rating": "8.8", "link": "https://www.booking.com/hotel/it/nh-collection-palazzo-cinquecento.en-gb.html"},
+        {"name": "Hotel Hiberia", "price": "~€100/night", "rating": "8.5", "link": "https://www.booking.com/hotel/it/hiberia.en-gb.html"}
     ]
     # Add more here
 }
 
 FALLBACK_ATTRACTIONS = {
-    "chiang mai": [
+    "chiangmai": [
         "Doi Inthanon National Park (highest peak in Thailand)",
         "Wat Phra That Doi Suthep (iconic temple with views)",
         "Elephant Nature Park (ethical sanctuary)",
         "Night Bazaar (shopping and street food)",
         "Old City Temples (historic sites like Wat Chedi Luang)"
     ],
-    "kuala lumpur": [
+    "kualalumpur": [
         "Petronas Twin Towers (iconic skyscrapers with views)",
         "Batu Caves (Hindu temple in limestone caves)",
         "KLCC Park (urban green space near towers)",
@@ -129,6 +139,13 @@ FALLBACK_ATTRACTIONS = {
         "Gardens by the Bay (futuristic gardens)",
         "Marina Bay Sands (infinity pool and views)",
         "Sentosa Island (beaches and attractions)"
+    ],
+    "roma": [  # Added for Rome
+        "Colosseum (ancient amphitheater and gladiator arena)",
+        "Vatican Museums & St. Peter's Basilica (art and history)",
+        "Trevi Fountain (iconic baroque fountain)",
+        "Pantheon (ancient Roman temple)",
+        "Roman Forum (ruins of ancient government buildings)"
     ]
     # Add more here
 }
@@ -146,7 +163,8 @@ def search_transport(start, dest, date_start, date_end):
             mode = item.select_one('.route__title, .mode').text.strip() if item.select_one('.route__title, .mode') else "Unknown"
             price = item.select_one('.route__price, .price').text.strip() if item.select_one('.route__price, .price') else "N/A"
             link = item.select_one('a')['href'] if item.select_one('a') else "/"
-            options.append({"mode": mode, "price": price, "link": f"https://www.rome2rio.com{link}"})
+            full_link = f"https://www.rome2rio.com{link}" if link.startswith('/') else link  # Ensure full URL
+            options.append({"mode": mode, "price": price, "link": full_link})
         
         if len(options) < 2:  # Enhanced fallback: More Google results and estimates
             google_query = f"best transport from {start} to {dest} {date_start} prices durations"
@@ -181,7 +199,7 @@ def search_hotels(dest, date_start, date_end):
         # Primary: Booking.com
         url = f"https://www.booking.com/searchresults.html?ss={dest}&checkin={date_start}&checkout={date_end}&group_adults=2&no_rooms=1&order=price"
         response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-        response.encoding = 'utf-8'  # Force UTF-8 to handle Thai characters
+        response.encoding = 'utf-8'  # Force UTF-8 to handle characters
         soup = BeautifulSoup(response.text, 'html.parser')
         
         for item in soup.find_all('div', {'data-testid': 'property-card'}):
@@ -203,7 +221,7 @@ def search_hotels(dest, date_start, date_end):
             for result in soup.select('.tF2Cxc')[:5]:  # More results for reliability
                 title = result.select_one('h3').text if result.select_one('h3') else "Hotel"
                 snippet = result.select_one('.VwiC3b').text if result.select_one('.VwiC3b') else ""
-                price_match = re.search(r'\$?\d+[\d,.]*|฿\d+[\d,.]*', snippet)  # Handle USD or THB
+                price_match = re.search(r'\$?\d+[\d,.]*|฿\d+[\d,.]*|€\d+[\d,.]*', snippet)  # Handle USD, THB, EUR
                 price = price_match.group(0) if price_match else "Check site"
                 rating_match = re.search(r'\d\.\d', snippet)
                 rating = rating_match.group(0) if rating_match else "N/A"
