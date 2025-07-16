@@ -43,4 +43,4 @@ def search_transport(start, dest, date_start, date_end):
         
         if len(options) < 2:  # Fallback with indirect via Bangkok and parsed details
             google_query = f"best transport from {start} to {dest} Thailand {date_start} prices"
-            google_url = f"https://www.google.com/search
+            google_url =
