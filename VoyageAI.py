@@ -34,6 +34,16 @@ st.markdown("""
         font-size: 20px !important;  /* Even larger button text */
         border: 2px solid #000000 !important;  /* Black border to stand out */
     }
+    /* Fix input fields: White background, black text for readability */
+    .stTextInput input {
+        background-color: #FFFFFF !important;  /* White background */
+        color: #000000 !important;  /* Black text */
+        border: 1px solid #CCCCCC !important;  /* Light border */
+    }
+    .stDateInput input {
+        background-color: #FFFFFF !important;  /* White for date pickers too */
+        color: #000000 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
