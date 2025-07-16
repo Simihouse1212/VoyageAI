@@ -63,7 +63,7 @@ def search_transport(start, dest, date_start, date_end):
             options.append({"mode": mode, "price": price, "link": f"https://www.rome2rio.com{link}"})
         
         if len(options) < 2:  # Enhanced fallback: More Google results and estimates
-            google_query = f"best transport from {start} to {dest} Thailand {date_start} prices durations"
+            google_query = f"best transport from {start} to {dest} {date_start} prices durations"
             google_url = f"https://www.google.com/search?q={requests.utils.quote(google_query)}"
             response = requests.get(google_url, headers={'User-Agent': 'Mozilla/5.0'})
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -77,11 +77,17 @@ def search_transport(start, dest, date_start, date_end):
                 link = result.select_one('a')['href'] if result.select_one('a') else google_url
                 options.append({"mode": f"{title} ({duration})", "price": price, "link": link})
             
-            # Specific fallback for common Thai routes (e.g., to Chiang Mai)
+            # Specific fallback for common routes (e.g., to Chiang Mai or Kuala Lumpur)
             if "chiang mai" in dest.lower():
                 options.extend([
                     {"mode": "Bus (direct or via Bangkok, ~10-12h)", "price": "~$20-40", "link": "https://www.bookaway.com/routes/thailand/bangkok-to-chiang-mai"},
                     {"mode": "Train + Bus (~12h total)", "price": "~$15-30", "link": "https://www.rome2rio.com/s/Bangkok/Chiang-Mai"}
+                ])
+            elif "kuala lumpur" in dest.lower():
+                options.extend([
+                    {"mode": "Flight (from BKK to KUL, ~2h)", "price": "~$50-100", "link": "https://www.skyscanner.net/transport/flights/bkkt/kul/"},
+                    {"mode": "Bus + Flight (Pattaya to BKK ~2h, then flight ~2h)", "price": "~$10 + $50-100 (total ~$60-110)", "link": "https://www.rome2rio.com/s/Pattaya/Kuala-Lumpur"},
+                    {"mode": "Train + Bus (via border, ~24h total)", "price": "~$30-60", "link": "https://www.seat61.com/Malaysia.htm"}
                 ])
         
         options = [opt for opt in options if opt['price'] != "N/A"]  # Filter junk
@@ -128,13 +134,20 @@ def search_hotels(dest, date_start, date_end):
         except Exception as e:
             st.warning(f"Google fallback failed: {str(e)}. Using hardcoded options.")
 
-        # Specific hardcoded fallback for Chiang Mai if still empty
-        if len(hotels) < 2 and "chiang mai" in dest.lower():
-            hotels = [
-                {"name": "Akyra Manor Chiang Mai", "price": "~฿3,000/night", "rating": "8.9", "link": "https://www.booking.com/hotel/th/akyra-manor-chiang-mai.en-gb.html"},
-                {"name": "Pingviman Hotel", "price": "~฿2,500/night", "rating": "8.7", "link": "https://www.booking.com/hotel/th/pingviman.en-gb.html"},
-                {"name": "99 The Gallery Hotel", "price": "~฿1,800/night", "rating": "8.5", "link": "https://www.booking.com/hotel/th/99-the-gallery.en-gb.html"}
-            ]
+        # Specific hardcoded fallback for Chiang Mai or Kuala Lumpur if still empty
+        if len(hotels) < 2:
+            if "chiang mai" in dest.lower():
+                hotels = [
+                    {"name": "Akyra Manor Chiang Mai", "price": "~฿3,000/night", "rating": "8.9", "link": "https://www.booking.com/hotel/th/akyra-manor-chiang-mai.en-gb.html"},
+                    {"name": "Pingviman Hotel", "price": "~฿2,500/night", "rating": "8.7", "link": "https://www.booking.com/hotel/th/pingviman.en-gb.html"},
+                    {"name": "99 The Gallery Hotel", "price": "~฿1,800/night", "rating": "8.5", "link": "https://www.booking.com/hotel/th/99-the-gallery.en-gb.html"}
+                ]
+            elif "kuala lumpur" in dest.lower():
+                hotels = [
+                    {"name": "Mandarin Oriental Kuala Lumpur", "price": "~$150/night", "rating": "9.0", "link": "https://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-gb.html"},
+                    {"name": "Hilton Kuala Lumpur", "price": "~$100/night", "rating": "8.8", "link": "https://www.booking.com/hotel/my/hilton-kuala-lumpur.en-gb.html"},
+                    {"name": "Sunway Putra Hotel", "price": "~$60/night", "rating": "8.5", "link": "https://www.booking.com/hotel/my/sunway-putra.en-gb.html"}
+                ]
 
     if not hotels:
         return [{"name": "No specific hotels found", "price": "N/A", "rating": "N/A", "link": "https://www.google.com/search?q=hotels+in+" + requests.utils.quote(dest)}]
@@ -162,8 +175,6 @@ def get_attractions(dest, date_start, date_end):
                 attractions.append(title)
         
         if len(attractions) < 3:  # Dynamic fallback: Use web search for any destination
-            # Simulate web search for top attractions (in real code, this could call a tool)
-            # For now, adding examples for Chiang Mai as a test
             if "chiang mai" in dest.lower():
                 attractions = [
                     "Doi Inthanon National Park (highest peak in Thailand)",
@@ -171,6 +182,14 @@ def get_attractions(dest, date_start, date_end):
                     "Elephant Nature Park (ethical sanctuary)",
                     "Night Bazaar (shopping and street food)",
                     "Old City Temples (historic sites like Wat Chedi Luang)"
+                ]
+            elif "kuala lumpur" in dest.lower():
+                attractions = [
+                    "Petronas Twin Towers (iconic skyscrapers with views)",
+                    "Batu Caves (Hindu temple in limestone caves)",
+                    "KLCC Park (urban green space near towers)",
+                    "Central Market (shopping for souvenirs and food)",
+                    "Jalan Alor (street food heaven)"
                 ]
             else:
                 attractions = ["Local highlights—search for more details! Try [TripAdvisor](https://www.tripadvisor.com/Attractions) for more."]  # General with link
