@@ -40,8 +40,8 @@ st.markdown("""
         color: #000000 !important;  /* Black text */
         border: 1px solid #CCCCCC !important;  /* Light border */
     }
-    .stDateInput input {
-        background-color: #FFFFFF !important;  /* White for date pickers too */
+    .stDateInput input, .stNumberInput input {
+        background-color: #FFFFFF !important;  /* White for date/number pickers too */
         color: #000000 !important;
     }
     </style>
@@ -169,9 +169,31 @@ def get_attractions(dest, date_start, date_end):
             attr = attractions[i % len(attractions)] if attractions else "Free day to explore"
             itinerary.append(f"Day {i+1}: Visit {attr}. Enjoy local cuisine and relax!")
         
-        return attractions, "\n".join(itinerary)
+        return attractions, "\n".join(itinerary), days
     except Exception as e:
-        return [str(e)], "Error generating itinerary. Try manually!"
+        return [str(e)], "Error generating itinerary. Try manually!", 1
+
+# Function to estimate total cost (rough calculation)
+def estimate_total_cost(transports, hotels, days, travelers):
+    # Transport: Cheapest per person, one-way (assume round-trip x2)
+    trans_price = 0
+    if transports and transports[0]['price'] and transports[0]['price'] != "N/A":
+        trans_str = re.sub(r'[^\d.]', '', transports[0]['price'].split('-')[0])  # Take low end
+        trans_price = float(trans_str) * 2 * travelers if trans_str else 50 * travelers  # Default $50/pp round-trip
+    
+    # Hotels: Cheapest per night, assume per room (divide by 2 if >1 traveler, rough)
+    hotel_price = 0
+    if hotels and hotels[0]['price'] and hotels[0]['price'] != "N/A":
+        hotel_str = re.sub(r'[^\d.]', '', hotels[0]['price'].split('-')[0])  # Take low end
+        per_night = float(hotel_str) if hotel_str else 50
+        room_factor = max(1, travelers / 2)  # Rough: 1 room for 1-2, more for larger groups
+        hotel_price = per_night * days * room_factor
+    
+    # Other: $50/day/person for attractions, food, etc.
+    other_price = 50 * days * travelers
+    
+    total = trans_price + hotel_price + other_price
+    return trans_price, hotel_price, other_price, total
 
 # Streamlit app
 st.set_page_config(page_title="Epic Travel Planner", page_icon="✈️")
@@ -190,9 +212,11 @@ date_end = st.date_input("End Date", value=date_start + datetime.timedelta(days=
 date_start_str = str(date_start)
 date_end_str = str(date_end)
 
+travelers = st.number_input("Number of Travelers", min_value=1, max_value=10, value=2, step=1)
+
 if st.button("Plan My Trip! 🚀"):
     if start and dest:
-        st.write(f"Planning your adventure from {start} to {dest} for {date_start_str} to {date_end_str}...")
+        st.write(f"Planning your adventure from {start} to {dest} for {date_start_str} to {date_end_str} with {travelers} travelers...")
         
         # Transport
         st.subheader("Best Transport Options (Quality/Price) 🚌✈️")
@@ -216,10 +240,19 @@ if st.button("Plan My Trip! 🚀"):
         
         # Attractions
         st.subheader("Major Attractions & Itinerary 📍")
-        attractions, itinerary = get_attractions(dest, date_start_str, date_end_str)
+        attractions, itinerary, days = get_attractions(dest, date_start_str, date_end_str)
         st.markdown("**Top Attractions:**")
         for attr in attractions:
             st.markdown(f"- {attr}")
         st.markdown("**Detailed Plan:**\n" + itinerary.replace("\n", "\n\n"))  # Add spacing for clarity
+        
+        # Total Cost Estimate
+        st.subheader("Estimated Total Cost 💰")
+        trans_est, hotel_est, other_est, total_est = estimate_total_cost(transports, hotels, days, travelers)
+        st.markdown(f"*Rough estimate based on cheapest options (per person where applicable). Actual costs may vary!*")
+        st.markdown(f"- Transport (round-trip): ~${trans_est:.2f}")
+        st.markdown(f"- Hotels ({days} nights): ~${hotel_est:.2f}")
+        st.markdown(f"- Attractions/Food/Misc ($50/day/person): ~${other_est:.2f}")
+        st.markdown(f"**Grand Total for {travelers} travelers: ~${total_est:.2f}**")
     else:
         st.warning("Please fill in starting location and destination!")
