@@ -70,12 +70,17 @@ FALLBACK_TRANSPORTS = {
         {"mode": "Flight (from BKK, ~2.5h)", "price": "~$60-120", "link": "https://www.skyscanner.net/transport/flights/bkkt/sin/"},
         {"mode": "Bus + Flight (~4h total from Pattaya)", "price": "~$10 + $60-120", "link": "https://www.rome2rio.com/s/Pattaya/Singapore"}
     ],
-    "roma": [  # Added for Rome, Italy (assuming that's the intent)
+    "roma": [
         {"mode": "Flight (BKK to FCO, ~12h with stopover)", "price": "~$400-800", "link": "https://www.skyscanner.net/transport/flights/bkkt/rome/"},
         {"mode": "Bus + Flight (Pattaya to BKK ~2h, then flight)", "price": "~$10 + $400-800 (total ~$410-810)", "link": "https://www.rome2rio.com/s/Pattaya/Rome-Italy"},
         {"mode": "Multi-stop (train/bus + flight, 20h+)", "price": "~$350-700", "link": "https://www.kayak.com/flights/BKK-ROM"}
+    ],
+    "tokyo": [  # Added for Tokyo
+        {"mode": "Flight (direct or with stop, ~6-8h from major hubs)", "price": "~$300-600", "link": "https://www.skyscanner.net/transport/flights/tyoa/tyo/"},
+        {"mode": "Flight with layover (e.g., via Seoul, ~10h total)", "price": "~$250-500", "link": "https://www.rome2rio.com/s/Rome-Italy/Tokyo"},
+        {"mode": "Premium flight (business class, ~7h)", "price": "~$1000+", "link": "https://www.kayak.com/flights/ROM-TYO"}
     ]
-    # Add more cities here, e.g., "tokyo": [...]
+    # Add more cities here
 }
 
 FALLBACK_HOTELS = {
@@ -101,10 +106,15 @@ FALLBACK_HOTELS = {
         {"name": "Marina Bay Sands", "price": "~$400/night", "rating": "9.0", "link": "https://www.booking.com/hotel/sg/marina-bay-sands.en-gb.html"},
         {"name": "Hotel Boss", "price": "~$100/night", "rating": "8.0", "link": "https://www.booking.com/hotel/sg/boss.en-gb.html"}
     ],
-    "roma": [  # Added for Rome
+    "roma": [
         {"name": "Hotel Artemide", "price": "~€150/night", "rating": "9.3", "link": "https://www.booking.com/hotel/it/artemide-roma.en-gb.html"},
         {"name": "NH Collection Roma Palazzo Cinquecento", "price": "~€200/night", "rating": "8.8", "link": "https://www.booking.com/hotel/it/nh-collection-palazzo-cinquecento.en-gb.html"},
         {"name": "Hotel Hiberia", "price": "~€100/night", "rating": "8.5", "link": "https://www.booking.com/hotel/it/hiberia.en-gb.html"}
+    ],
+    "tokyo": [  # Added for Tokyo
+        {"name": "The Prince Park Tower Tokyo", "price": "~¥20,000/night", "rating": "9.0", "link": "https://www.booking.com/hotel/jp/the-prince-park-tower-tokyo.en-gb.html"},
+        {"name": "Hotel Gracery Shinjuku", "price": "~¥15,000/night", "rating": "8.5", "link": "https://www.booking.com/hotel/jp/gracery-shinjuku.en-gb.html"},
+        {"name": "APA Hotel Asakusa Tawaramachi Ekimae", "price": "~¥10,000/night", "rating": "8.2", "link": "https://www.booking.com/hotel/jp/apa-asakusa-tawaramachi-ekimae.en-gb.html"}
     ]
     # Add more here
 }
@@ -140,12 +150,19 @@ FALLBACK_ATTRACTIONS = {
         "Marina Bay Sands (infinity pool and views)",
         "Sentosa Island (beaches and attractions)"
     ],
-    "roma": [  # Added for Rome
+    "roma": [
         "Colosseum (ancient amphitheater and gladiator arena)",
         "Vatican Museums & St. Peter's Basilica (art and history)",
         "Trevi Fountain (iconic baroque fountain)",
         "Pantheon (ancient Roman temple)",
         "Roman Forum (ruins of ancient government buildings)"
+    ],
+    "tokyo": [  # Added for Tokyo (based on quick sim—I tested the scraper in a tool, but it flopped, so fallback is key)
+        "Tokyo Tower (iconic landmark with views)",
+        "Shibuya Crossing (busiest intersection in the world)",
+        "Senso-ji Temple (ancient Buddhist temple in Asakusa)",
+        "Akihabara (electronics and anime district)",
+        "Meiji Shrine (serene Shinto shrine in a forest)"
     ]
     # Add more here
 }
@@ -167,7 +184,7 @@ def search_transport(start, dest, date_start, date_end):
             options.append({"mode": mode, "price": price, "link": full_link})
         
         if len(options) < 2:  # Enhanced fallback: More Google results and estimates
-            google_query = f"best transport from {start} to {dest} {date_start} prices durations"
+            google_query = f"cheap flights or transport from {start} to {dest} on {date_start} prices"  # Tweaked query for better international hits
             google_url = f"https://www.google.com/search?q={requests.utils.quote(google_query)}"
             response = requests.get(google_url, headers={'User-Agent': 'Mozilla/5.0'})
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -221,7 +238,7 @@ def search_hotels(dest, date_start, date_end):
             for result in soup.select('.tF2Cxc')[:5]:  # More results for reliability
                 title = result.select_one('h3').text if result.select_one('h3') else "Hotel"
                 snippet = result.select_one('.VwiC3b').text if result.select_one('.VwiC3b') else ""
-                price_match = re.search(r'\$?\d+[\d,.]*|฿\d+[\d,.]*|€\d+[\d,.]*', snippet)  # Handle USD, THB, EUR
+                price_match = re.search(r'\$?\d+[\d,.]*|฿\d+[\d,.]*|€\d+[\d,.]*|¥\d+[\d,.]*', snippet)  # Handle USD, THB, EUR, JPY
                 price = price_match.group(0) if price_match else "Check site"
                 rating_match = re.search(r'\d\.\d', snippet)
                 rating = rating_match.group(0) if rating_match else "N/A"
