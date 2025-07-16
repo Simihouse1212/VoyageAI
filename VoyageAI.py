@@ -47,6 +47,92 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Modular fallback dictionaries (expand as needed)
+FALLBACK_TRANSPORTS = {
+    "chiang mai": [
+        {"mode": "Bus (direct or via Bangkok, ~10-12h)", "price": "~$20-40", "link": "https://www.bookaway.com/routes/thailand/bangkok-to-chiang-mai"},
+        {"mode": "Train + Bus (~12h total)", "price": "~$15-30", "link": "https://www.rome2rio.com/s/Bangkok/Chiang-Mai"}
+    ],
+    "kuala lumpur": [
+        {"mode": "Flight (from BKK to KUL, ~2h)", "price": "~$50-100", "link": "https://www.skyscanner.net/transport/flights/bkkt/kul/"},
+        {"mode": "Bus + Flight (Pattaya to BKK ~2h, then flight ~2h)", "price": "~$10 + $50-100 (total ~$60-110)", "link": "https://www.rome2rio.com/s/Pattaya/Kuala-Lumpur"},
+        {"mode": "Train + Bus (via border, ~24h total)", "price": "~$30-60", "link": "https://www.seat61.com/Malaysia.htm"}
+    ],
+    "bangkok": [  # Example addition
+        {"mode": "Bus (direct, ~2h from Pattaya)", "price": "~$5-10", "link": "https://www.rome2rio.com/s/Pattaya/Bangkok"},
+        {"mode": "Minivan (~2h)", "price": "~$4-8", "link": "https://www.bookaway.com/routes/thailand/pattaya-to-bangkok"}
+    ],
+    "phuket": [
+        {"mode": "Flight (from BKK, ~1.5h)", "price": "~$30-60", "link": "https://www.skyscanner.net/transport/flights/bkkt/hkt/"},
+        {"mode": "Bus (~12h)", "price": "~$20-40", "link": "https://www.rome2rio.com/s/Bangkok/Phuket"}
+    ],
+    "singapore": [
+        {"mode": "Flight (from BKK, ~2.5h)", "price": "~$60-120", "link": "https://www.skyscanner.net/transport/flights/bkkt/sin/"},
+        {"mode": "Bus + Flight (~4h total from Pattaya)", "price": "~$10 + $60-120", "link": "https://www.rome2rio.com/s/Pattaya/Singapore"}
+    ]
+    # Add more cities here, e.g., "tokyo": [...]
+}
+
+FALLBACK_HOTELS = {
+    "chiang mai": [
+        {"name": "Akyra Manor Chiang Mai", "price": "~฿3,000/night", "rating": "8.9", "link": "https://www.booking.com/hotel/th/akyra-manor-chiang-mai.en-gb.html"},
+        {"name": "Pingviman Hotel", "price": "~฿2,500/night", "rating": "8.7", "link": "https://www.booking.com/hotel/th/pingviman.en-gb.html"},
+        {"name": "99 The Gallery Hotel", "price": "~฿1,800/night", "rating": "8.5", "link": "https://www.booking.com/hotel/th/99-the-gallery.en-gb.html"}
+    ],
+    "kuala lumpur": [
+        {"name": "Mandarin Oriental Kuala Lumpur", "price": "~$150/night", "rating": "9.0", "link": "https://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-gb.html"},
+        {"name": "Hilton Kuala Lumpur", "price": "~$100/night", "rating": "8.8", "link": "https://www.booking.com/hotel/my/hilton-kuala-lumpur.en-gb.html"},
+        {"name": "Sunway Putra Hotel", "price": "~$60/night", "rating": "8.5", "link": "https://www.booking.com/hotel/my/sunway-putra.en-gb.html"}
+    ],
+    "bangkok": [
+        {"name": "Chatrium Hotel Riverside Bangkok", "price": "~฿2,500/night", "rating": "8.9", "link": "https://www.booking.com/hotel/th/chatrium-riverside-bangkok.en-gb.html"},
+        {"name": "Ibis Bangkok Riverside", "price": "~฿1,200/night", "rating": "8.0", "link": "https://www.booking.com/hotel/th/ibis-bangkok-riverside.en-gb.html"}
+    ],
+    "phuket": [
+        {"name": "The Nai Harn", "price": "~฿4,000/night", "rating": "9.2", "link": "https://www.booking.com/hotel/th/the-nai-harn.en-gb.html"},
+        {"name": "Holiday Inn Resort Phuket", "price": "~฿2,000/night", "rating": "8.5", "link": "https://www.booking.com/hotel/th/holiday-inn-resort-phuket.en-gb.html"}
+    ],
+    "singapore": [
+        {"name": "Marina Bay Sands", "price": "~$400/night", "rating": "9.0", "link": "https://www.booking.com/hotel/sg/marina-bay-sands.en-gb.html"},
+        {"name": "Hotel Boss", "price": "~$100/night", "rating": "8.0", "link": "https://www.booking.com/hotel/sg/boss.en-gb.html"}
+    ]
+    # Add more here
+}
+
+FALLBACK_ATTRACTIONS = {
+    "chiang mai": [
+        "Doi Inthanon National Park (highest peak in Thailand)",
+        "Wat Phra That Doi Suthep (iconic temple with views)",
+        "Elephant Nature Park (ethical sanctuary)",
+        "Night Bazaar (shopping and street food)",
+        "Old City Temples (historic sites like Wat Chedi Luang)"
+    ],
+    "kuala lumpur": [
+        "Petronas Twin Towers (iconic skyscrapers with views)",
+        "Batu Caves (Hindu temple in limestone caves)",
+        "KLCC Park (urban green space near towers)",
+        "Central Market (shopping for souvenirs and food)",
+        "Jalan Alor (street food heaven)"
+    ],
+    "bangkok": [
+        "Grand Palace (historic royal complex)",
+        "Wat Arun (Temple of Dawn)",
+        "Chatuchak Weekend Market (huge shopping area)",
+        "Chao Phraya River (boat rides)"
+    ],
+    "phuket": [
+        "Patong Beach (vibrant nightlife and sands)",
+        "Big Buddha (giant statue with views)",
+        "Phi Phi Islands (day trip to paradise)"
+    ],
+    "singapore": [
+        "Gardens by the Bay (futuristic gardens)",
+        "Marina Bay Sands (infinity pool and views)",
+        "Sentosa Island (beaches and attractions)"
+    ]
+    # Add more here
+}
+
 # Helper for transport with enhanced fallback and clearer formatting
 def search_transport(start, dest, date_start, date_end):
     try:
@@ -77,18 +163,10 @@ def search_transport(start, dest, date_start, date_end):
                 link = result.select_one('a')['href'] if result.select_one('a') else google_url
                 options.append({"mode": f"{title} ({duration})", "price": price, "link": link})
             
-            # Specific fallback for common routes (e.g., to Chiang Mai or Kuala Lumpur)
-            if "chiang mai" in dest.lower():
-                options.extend([
-                    {"mode": "Bus (direct or via Bangkok, ~10-12h)", "price": "~$20-40", "link": "https://www.bookaway.com/routes/thailand/bangkok-to-chiang-mai"},
-                    {"mode": "Train + Bus (~12h total)", "price": "~$15-30", "link": "https://www.rome2rio.com/s/Bangkok/Chiang-Mai"}
-                ])
-            elif "kuala lumpur" in dest.lower():
-                options.extend([
-                    {"mode": "Flight (from BKK to KUL, ~2h)", "price": "~$50-100", "link": "https://www.skyscanner.net/transport/flights/bkkt/kul/"},
-                    {"mode": "Bus + Flight (Pattaya to BKK ~2h, then flight ~2h)", "price": "~$10 + $50-100 (total ~$60-110)", "link": "https://www.rome2rio.com/s/Pattaya/Kuala-Lumpur"},
-                    {"mode": "Train + Bus (via border, ~24h total)", "price": "~$30-60", "link": "https://www.seat61.com/Malaysia.htm"}
-                ])
+            # Use modular fallback if available
+            dest_key = dest.lower().replace(" ", "")
+            if dest_key in FALLBACK_TRANSPORTS:
+                options.extend(FALLBACK_TRANSPORTS[dest_key])
         
         options = [opt for opt in options if opt['price'] != "N/A"]  # Filter junk
         options.sort(key=lambda x: float(re.sub(r'[^\d.]', '', x['price'])) if re.sub(r'[^\d.]', '', x['price']) else float('inf'))
@@ -134,20 +212,10 @@ def search_hotels(dest, date_start, date_end):
         except Exception as e:
             st.warning(f"Google fallback failed: {str(e)}. Using hardcoded options.")
 
-        # Specific hardcoded fallback for Chiang Mai or Kuala Lumpur if still empty
-        if len(hotels) < 2:
-            if "chiang mai" in dest.lower():
-                hotels = [
-                    {"name": "Akyra Manor Chiang Mai", "price": "~฿3,000/night", "rating": "8.9", "link": "https://www.booking.com/hotel/th/akyra-manor-chiang-mai.en-gb.html"},
-                    {"name": "Pingviman Hotel", "price": "~฿2,500/night", "rating": "8.7", "link": "https://www.booking.com/hotel/th/pingviman.en-gb.html"},
-                    {"name": "99 The Gallery Hotel", "price": "~฿1,800/night", "rating": "8.5", "link": "https://www.booking.com/hotel/th/99-the-gallery.en-gb.html"}
-                ]
-            elif "kuala lumpur" in dest.lower():
-                hotels = [
-                    {"name": "Mandarin Oriental Kuala Lumpur", "price": "~$150/night", "rating": "9.0", "link": "https://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-gb.html"},
-                    {"name": "Hilton Kuala Lumpur", "price": "~$100/night", "rating": "8.8", "link": "https://www.booking.com/hotel/my/hilton-kuala-lumpur.en-gb.html"},
-                    {"name": "Sunway Putra Hotel", "price": "~$60/night", "rating": "8.5", "link": "https://www.booking.com/hotel/my/sunway-putra.en-gb.html"}
-                ]
+        # Use modular fallback if available
+        dest_key = dest.lower().replace(" ", "")
+        if dest_key in FALLBACK_HOTELS and len(hotels) < 2:
+            hotels.extend(FALLBACK_HOTELS[dest_key])
 
     if not hotels:
         return [{"name": "No specific hotels found", "price": "N/A", "rating": "N/A", "link": "https://www.google.com/search?q=hotels+in+" + requests.utils.quote(dest)}]
@@ -174,23 +242,10 @@ def get_attractions(dest, date_start, date_end):
             if title:
                 attractions.append(title)
         
-        if len(attractions) < 3:  # Dynamic fallback: Use web search for any destination
-            if "chiang mai" in dest.lower():
-                attractions = [
-                    "Doi Inthanon National Park (highest peak in Thailand)",
-                    "Wat Phra That Doi Suthep (iconic temple with views)",
-                    "Elephant Nature Park (ethical sanctuary)",
-                    "Night Bazaar (shopping and street food)",
-                    "Old City Temples (historic sites like Wat Chedi Luang)"
-                ]
-            elif "kuala lumpur" in dest.lower():
-                attractions = [
-                    "Petronas Twin Towers (iconic skyscrapers with views)",
-                    "Batu Caves (Hindu temple in limestone caves)",
-                    "KLCC Park (urban green space near towers)",
-                    "Central Market (shopping for souvenirs and food)",
-                    "Jalan Alor (street food heaven)"
-                ]
+        if len(attractions) < 3:  # Dynamic fallback using modular dict
+            dest_key = dest.lower().replace(" ", "")
+            if dest_key in FALLBACK_ATTRACTIONS:
+                attractions = FALLBACK_ATTRACTIONS[dest_key]
             else:
                 attractions = ["Local highlights—search for more details! Try [TripAdvisor](https://www.tripadvisor.com/Attractions) for more."]  # General with link
         
